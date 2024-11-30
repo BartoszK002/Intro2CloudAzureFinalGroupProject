@@ -1,0 +1,61 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  storageAccountName: 'finalprojstorageacct'
+  containerName: 'finalprojcontainer'
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'azure-storage-connection'  # Name of your service connection
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Check if files exist before uploading
+      if [ ! -f "$(Build.SourcesDirectory)/data/400_households.csv" ]; then
+        echo "Error: Household data file not found"
+        exit 1
+      fi
+      
+      if [ ! -f "$(Build.SourcesDirectory)/data/400_transactions.csv" ]; then
+        echo "Error: Transactions data file not found"
+        exit 1
+      fi
+      
+      if [ ! -f "$(Build.SourcesDirectory)/data/400_products.csv" ]; then
+        echo "Error: Products data file not found"
+        exit 1
+      fi
+
+      # Upload household data
+      echo "Uploading household data..."
+      az storage blob upload \
+        --account-name $(storageAccountName) \
+        --container-name $(containerName) \
+        --name "400_household.csv" \
+        --file "$(Build.SourcesDirectory)/data/400_households.csv" \
+        --auth-mode login
+
+      # Upload transactions data
+      echo "Uploading transactions data..."
+      az storage blob upload \
+        --account-name $(storageAccountName) \
+        --container-name $(containerName) \
+        --name "400_transactions.csv" \
+        --file "$(Build.SourcesDirectory)/data/400_transactions.csv" \
+        --auth-mode login
+
+      # Upload products data
+      echo "Uploading products data..."
+      az storage blob upload \
+        --account-name $(storageAccountName) \
+        --container-name $(containerName) \
+        --name "400_products.csv" \
+        --file "$(Build.SourcesDirectory)/data/400_products.csv" \
+        --auth-mode login
+
+      echo "All files uploaded successfully!"
