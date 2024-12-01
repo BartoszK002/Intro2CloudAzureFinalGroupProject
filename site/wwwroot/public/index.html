@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retail Analysis Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-form {
+            background: white;
+            max-width: 400px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fpublic%2Findex.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Findex.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script></head>
+<body>
+    <div class="container">
+        <div class="login-form">
+            <h2>Login</h2>
+            <form id="loginForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <button type="button" onclick="handleSubmit(event)">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+
+            // Basic validation
+            if (!username || !password || !email) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // For demo purposes, allow any login
+            // In production, you would validate against a server
+            localStorage.setItem('username', username);
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            // Redirect to data page
+            window.location.href = 'data.html';
+        }
+
+        // Check if user is already logged in
+        window.onload = function() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                window.location.href = 'data.html';
+            }
+        };
+    </script>
+</body>
+</html>

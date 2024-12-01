@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retail Data Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .search-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error-message {
+            color: #dc3545;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                margin: 0 -20px;
+                border-radius: 0;
+            }
+            
+            input[type="number"] {
+                max-width: none;
+            }
+        }
+    </style>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fpublic%2Fdata.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fdata.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1732992953489&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fdata.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
+<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1732992953489&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script></head>
+<body>
+    <div class="header">
+        <h1>Retail Data Analysis</h1>
+    </div>
+
+    <div class="search-container">
+        <h2>Household Data Search</h2>
+        <div class="search-box">
+            <input type="number" id="hshdNum" placeholder="Enter Household Number (e.g., 10)" min="1">
+            <button onclick="searchData()">Search</button>
+        </div>
+        <div class="button-container">
+            <button id="exportBtn" onclick="exportToCSV()" style="display: none;">Export to CSV</button>
+        </div>
+        <div id="loading" class="loading">Searching...</div>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <div class="table-container">
+        <div id="results">
+            <div style="text-align: center; color: #666;">
+                Enter a household number to view data. Try household #10 for a sample.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-load household #10 on page load
+        window.onload = function() {
+            document.getElementById('hshdNum').value = '10';
+            searchData();
+        };
+
+        async function searchData() {
+            const hshdNum = document.getElementById('hshdNum').value;
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const errorMessage = document.getElementById('errorMessage');
+            const exportBtn = document.getElementById('exportBtn');
+
+            // Reset displays
+            loading.style.display = 'block';
+            errorMessage.style.display = 'none';
+            exportBtn.style.display = 'none';
+            results.innerHTML = '';
+
+            if (!hshdNum) {
+                errorMessage.textContent = 'Please enter a household number';
+                errorMessage.style.display = 'block';
+                loading.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/household/${hshdNum}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    results.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No results found for this household number</div>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                let table = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Household</th>
+                                <th>Basket</th>
+                                <th>Date</th>
+                                <th>Product</th>
+                                <th>Department</th>
+                                <th>Commodity</th>
+                                <th>Spend</th>
+                                <th>Units</th>
+                                <th>Store Region</th>
+                                <th>Week</th>
+                                <th>Year</th>
+                                <th>Loyalty</th>
+                                <th>Age Range</th>
+                                <th>Marital</th>
+                                <th>Income</th>
+                                <th>Homeowner</th>
+                                <th>Composition</th>
+                                <th>Size</th>
+                                <th>Children</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(row => {
+                    table += `
+                        <tr>
+                            <td>${row.HSHD_NUM}</td>
+                            <td>${row.BASKET_NUM}</td>
+                            <td>${new Date(row.Date).toLocaleDateString()}</td>
+                            <td>${row.PRODUCT_NUM}</td>
+                            <td>${row.DEPARTMENT}</td>
+                            <td>${row.COMMODITY}</td>
+                            <td>$${row.SPEND.toFixed(2)}</td>
+                            <td>${row.UNITS}</td>
+                            <td>${row.STORE_REGION}</td>
+                            <td>${row.WEEK_NUM}</td>
+                            <td>${row.YEAR}</td>
+                            <td>${row.LOYALTY_FLAG}</td>
+                            <td>${row.AGE_RANGE}</td>
+                            <td>${row.MARITAL_STATUS}</td>
+                            <td>${row.INCOME_RANGE}</td>
+                            <td>${row.HOMEOWNER_DESC}</td>
+                            <td>${row.HSHD_COMPOSITION}</td>
+                            <td>${row.HSHD_SIZE}</td>
+                            <td>${row.CHILDREN}</td>
+                        </tr>
+                    `;
+                });
+
+                table += '</tbody></table>';
+                results.innerHTML = table;
+                exportBtn.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = 'Error fetching data. Please try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Add event listener for Enter key
+        document.getElementById('hshdNum').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchData();
+            }
+        });
+
+        // Export to CSV functionality
+        function exportToCSV() {
+            const table = document.querySelector('table');
+            if (!table) return;
+
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+            
+            for (let row of rows) {
+                const cols = row.querySelectorAll('td, th');
+                const rowData = Array.from(cols).map(col => {
+                    // Handle special characters and commas in the data
+                    let text = col.textContent;
+                    // Remove dollar signs and commas from numbers
+                    text = text.replace('$', '').replace(',', '');
+                    // Wrap in quotes if contains comma
+                    if (text.includes(',')) {
+                        text = `"${text}"`;
+                    }
+                    return text;
+                });
+                csv.push(rowData.join(','));
+            }
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `household_${document.getElementById('hshdNum').value}_data.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
