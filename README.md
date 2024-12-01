@@ -5,7 +5,7 @@ A web-based application for analyzing retail transaction data, built with Node.j
 ## Project Structure
 
 ```
-retail-analysis/
+site/wwwroot/
 ├── public/
 │   ├── index.html      # Login page
 │   └── data.html       # Data visualization page
