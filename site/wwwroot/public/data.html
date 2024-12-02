@@ -1,155 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retail Data Analysis</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-
-        .header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-
-        .search-container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        input[type="number"] {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            flex: 1;
-            max-width: 200px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-        }
-
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-
-        .error-message {
-            color: #dc3545;
-            padding: 10px;
-            background-color: #f8d7da;
-            border-radius: 4px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .table-container {
-                margin: 0 -20px;
-                border-radius: 0;
-            }
-            
-            input[type="number"] {
-                max-width: none;
-            }
-        }
-    </style>
-<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fpublic%2Fdata.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
-<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fdata.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
-<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1733014614856&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1732992953489&amp;type=content-script&amp;dmn=retail-analysis-finalprojfs24.scm.azurewebsites.net&amp;url=https%3A%2F%2Fretail-analysis-finalprojfs24.scm.azurewebsites.net%2Fapi%2Fvfs%2Fsite%2Fwwwroot%2Fdata.html&amp;app=firefox.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script>
-<script type="text/javascript" nonce="416ace94e30d46148f409fb0d62" src="//local.adguard.org?ts=1732992953489&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script></head>
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/data.css">
+</head>
 <body>
     <div class="header">
         <h1>Retail Data Analysis</h1>
     </div>
 
-    <div class="search-container">
-        <h2>Household Data Search</h2>
-        <div class="search-box">
-            <input type="number" id="hshdNum" placeholder="Enter Household Number (e.g., 10)" min="1">
-            <button onclick="searchData()">Search</button>
+    <div class="container">
+        <div class="nav-links" style="text-align: right; margin-bottom: 20px;">
+            <a href="dashboard.html" style="color: #4CAF50; text-decoration: none; padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 4px; transition: all 0.3s ease; margin-right: 10px;">Dashboard</a>
+            <a href="upload.html" style="color: #4CAF50; text-decoration: none; padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 4px; transition: all 0.3s ease;">Upload Data</a>
         </div>
-        <div class="button-container">
-            <button id="exportBtn" onclick="exportToCSV()" style="display: none;">Export to CSV</button>
-        </div>
-        <div id="loading" class="loading">Searching...</div>
-        <div id="errorMessage" class="error-message"></div>
-    </div>
 
-    <div class="table-container">
-        <div id="results">
-            <div style="text-align: center; color: #666;">
-                Enter a household number to view data. Try household #10 for a sample.
+        <div class="search-container">
+            <h2>Household Data Search</h2>
+            <div class="search-box">
+                <input type="number" id="hshdNum" placeholder="Enter Household Number" min="1">
+                <button onclick="searchData()">Search</button>
+            </div>
+            <div class="button-container">
+                <button id="exportBtn" onclick="exportToCSV()" style="display: none;">Export to CSV</button>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="resultCount" class="result-count" style="display: none;"></div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-scroll-container">
+                <div id="results">
+                    <div style="text-align: center; color: #666;">
+                        Enter a household number to view data
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <div id="loadingOverlay" class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Searching...</div>
+    </div>
+
     <script>
+        let currentData = [];
+        let currentSort = {
+            column: null,
+            direction: 'asc'
+        };
+
+        // Memoization cache for sorting
+        const sortCache = new Map();
+        
+        // Add search results cache
+        const searchCache = new Map();
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
         // Auto-load household #10 on page load
         window.onload = function() {
             document.getElementById('hshdNum').value = '10';
@@ -158,101 +69,311 @@
 
         async function searchData() {
             const hshdNum = document.getElementById('hshdNum').value;
-            const loading = document.getElementById('loading');
+            const loadingOverlay = document.getElementById('loadingOverlay');
             const results = document.getElementById('results');
             const errorMessage = document.getElementById('errorMessage');
             const exportBtn = document.getElementById('exportBtn');
+            const resultCount = document.getElementById('resultCount');
 
-            // Reset displays
-            loading.style.display = 'block';
+            loadingOverlay.style.display = 'flex';
             errorMessage.style.display = 'none';
             exportBtn.style.display = 'none';
+            resultCount.style.display = 'none';
             results.innerHTML = '';
 
             if (!hshdNum) {
                 errorMessage.textContent = 'Please enter a household number';
                 errorMessage.style.display = 'block';
-                loading.style.display = 'none';
+                loadingOverlay.style.display = 'none';
                 return;
             }
 
             try {
+                // Check cache first
+                const cachedResult = searchCache.get(hshdNum);
+                if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
+                    currentData = cachedResult.data;
+                    displayData(currentData);
+                    exportBtn.style.display = 'block';
+                    updateResultCount(currentData.length);
+                    loadingOverlay.style.display = 'none';
+                    return;
+                }
+
                 const response = await fetch(`/api/household/${hshdNum}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const data = await response.json();
-
-                if (data.length === 0) {
-                    results.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No results found for this household number</div>';
-                    loading.style.display = 'none';
+                const result = await response.json();
+                
+                if (!result.success) {
+                    results.innerHTML = `<div style="text-align: center; padding: 20px; color: #666;">${result.message}</div>`;
+                    loadingOverlay.style.display = 'none';
                     return;
                 }
 
-                let table = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Household</th>
-                                <th>Basket</th>
-                                <th>Date</th>
-                                <th>Product</th>
-                                <th>Department</th>
-                                <th>Commodity</th>
-                                <th>Spend</th>
-                                <th>Units</th>
-                                <th>Store Region</th>
-                                <th>Week</th>
-                                <th>Year</th>
-                                <th>Loyalty</th>
-                                <th>Age Range</th>
-                                <th>Marital</th>
-                                <th>Income</th>
-                                <th>Homeowner</th>
-                                <th>Composition</th>
-                                <th>Size</th>
-                                <th>Children</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                currentData = result.data;
+                
+                // Cache the successful result
+                if (currentData && currentData.length > 0) {
+                    searchCache.set(hshdNum, {
+                        data: currentData,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Clear old cache entries if cache gets too large
+                    if (searchCache.size > 50) {
+                        const oldestKey = Array.from(searchCache.keys())[0];
+                        searchCache.delete(oldestKey);
+                    }
+                }
 
-                data.forEach(row => {
-                    table += `
-                        <tr>
-                            <td>${row.HSHD_NUM}</td>
-                            <td>${row.BASKET_NUM}</td>
-                            <td>${new Date(row.Date).toLocaleDateString()}</td>
-                            <td>${row.PRODUCT_NUM}</td>
-                            <td>${row.DEPARTMENT}</td>
-                            <td>${row.COMMODITY}</td>
-                            <td>$${row.SPEND.toFixed(2)}</td>
-                            <td>${row.UNITS}</td>
-                            <td>${row.STORE_REGION}</td>
-                            <td>${row.WEEK_NUM}</td>
-                            <td>${row.YEAR}</td>
-                            <td>${row.LOYALTY_FLAG}</td>
-                            <td>${row.AGE_RANGE}</td>
-                            <td>${row.MARITAL_STATUS}</td>
-                            <td>${row.INCOME_RANGE}</td>
-                            <td>${row.HOMEOWNER_DESC}</td>
-                            <td>${row.HSHD_COMPOSITION}</td>
-                            <td>${row.HSHD_SIZE}</td>
-                            <td>${row.CHILDREN}</td>
-                        </tr>
-                    `;
-                });
+                if (currentData.length === 0) {
+                    results.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No results found for this household number</div>';
+                    loadingOverlay.style.display = 'none';
+                    return;
+                }
 
-                table += '</tbody></table>';
-                results.innerHTML = table;
+                displayData(currentData);
                 exportBtn.style.display = 'block';
-            } catch (error) {
-                console.error('Error:', error);
-                errorMessage.textContent = 'Error fetching data. Please try again.';
+                updateResultCount(currentData.length);
+            } catch (err) {
+                errorMessage.textContent = `Error: ${err.message}`;
                 errorMessage.style.display = 'block';
             } finally {
-                loading.style.display = 'none';
+                loadingOverlay.style.display = 'none';
             }
+        }
+
+        function updateResultCount(count) {
+            const resultCount = document.getElementById('resultCount');
+            resultCount.textContent = `Found ${count} ${count === 1 ? 'entry' : 'entries'} for household #${document.getElementById('hshdNum').value}`;
+            resultCount.style.display = 'block';
+        }
+
+        function formatValue(value, type = 'text') {
+            if (value === null || value === undefined || value === '' || 
+                value === 'null' || value === 'NULL' || value === 'Null' || 
+                value === 'undefined' || value.toString().trim() === '') {
+                return 'N/A';
+            }
+            
+            switch (type) {
+                case 'money':
+                    const amount = parseFloat(value);
+                    return isNaN(amount) ? 'N/A' : `$${amount.toFixed(2)}`;
+                case 'number':
+                    const num = parseInt(value);
+                    return isNaN(num) ? 'N/A' : num;
+                case 'text':
+                    const trimmed = value.toString().trim();
+                    return trimmed === '' ? 'N/A' : trimmed;
+                default:
+                    return value.toString().trim() || 'N/A';
+            }
+        }
+
+        // Optimized sort function
+        function sortData(column) {
+            const startTime = performance.now();
+            
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            const cacheKey = `${column}_${currentSort.direction}`;
+            if (sortCache.has(cacheKey)) {
+                displayData(sortCache.get(cacheKey));
+                console.log(`Sorting from cache took ${performance.now() - startTime}ms`);
+                return;
+            }
+
+            // Pre-process values for sorting
+            const preprocessedData = currentData.map((row, index) => {
+                let value = row[column];
+                
+                // Process based on column type
+                if (column === 'PURCHASE') {
+                    value = new Date(value).getTime();
+                } else if (column === 'SPEND') {
+                    value = parseFloat(value) || 0;
+                } else if (column === 'UNITS' || column === 'WEEK_NUM' || column === 'YEAR' || column === 'HSHD_NUM' || column === 'PRODUCT_NUM') {
+                    value = parseInt(value) || 0;
+                } else if (typeof value === 'string') {
+                    value = value.trim().toLowerCase();
+                }
+
+                return { index, value };
+            });
+
+            // Sort preprocessed data
+            preprocessedData.sort((a, b) => {
+                if (a.value < b.value) return currentSort.direction === 'asc' ? -1 : 1;
+                if (a.value > b.value) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Map back to original data
+            const sortedData = preprocessedData.map(item => currentData[item.index]);
+            
+            // Cache the result
+            sortCache.set(cacheKey, sortedData);
+            
+            // Clear old cache entries if cache gets too large
+            if (sortCache.size > 20) {
+                const firstKey = sortCache.keys().next().value;
+                sortCache.delete(firstKey);
+            }
+
+            displayData(sortedData);
+            console.log(`Sorting took ${performance.now() - startTime}ms`);
+        }
+
+        // Optimize the displayData function for performance
+        function displayData(data) {
+            const results = document.getElementById('results');
+            
+            // Create table header only once
+            const tableHeader = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-sm sort-icon" onclick="sortData('HSHD_NUM')">Household</th>
+                            <th class="col-md sort-icon" onclick="sortData('BASKET_NUM')">Basket</th>
+                            <th class="col-md sort-icon" onclick="sortData('PURCHASE')">Date</th>
+                            <th class="col-sm sort-icon" onclick="sortData('PRODUCT_NUM')">Product</th>
+                            <th class="col-lg sort-icon" onclick="sortData('DEPARTMENT')">Department</th>
+                            <th class="col-lg sort-icon" onclick="sortData('COMMODITY')">Commodity</th>
+                            <th class="col-sm sort-icon" onclick="sortData('SPEND')">Spend</th>
+                            <th class="col-xs sort-icon" onclick="sortData('UNITS')">Units</th>
+                            <th class="col-md sort-icon" onclick="sortData('STORE_REGION')">Store Region</th>
+                            <th class="col-xs sort-icon" onclick="sortData('WEEK_NUM')">Week</th>
+                            <th class="col-xs sort-icon" onclick="sortData('YEAR')">Year</th>
+                            <th class="col-xs sort-icon" onclick="sortData('LOYALTY_FLAG')">Loyalty</th>
+                            <th class="col-md sort-icon" onclick="sortData('AGE_RANGE')">Age Range</th>
+                            <th class="col-md sort-icon" onclick="sortData('MARITAL_STATUS')">Marital</th>
+                            <th class="col-md sort-icon" onclick="sortData('INCOME_RANGE')">Income</th>
+                            <th class="col-md sort-icon" onclick="sortData('HOMEOWNER_DESC')">Homeowner</th>
+                            <th class="col-lg sort-icon" onclick="sortData('HSHD_COMPOSITION')">Composition</th>
+                            <th class="col-xs sort-icon" onclick="sortData('HSHD_SIZE')">Size</th>
+                            <th class="col-sm sort-icon" onclick="sortData('CHILDREN')">Children</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            // Build rows in chunks for better performance
+            const chunkSize = 100;
+            const fragments = [];
+            
+            for (let i = 0; i < data.length; i += chunkSize) {
+                const chunk = data.slice(i, i + chunkSize);
+                const rows = chunk.map(row => {
+                    let purchaseDate = 'N/A';
+                    if (row.PURCHASE) {
+                        try {
+                            let date = new Date(row.PURCHASE);
+                            if (!isNaN(date.getTime())) {
+                                purchaseDate = date.toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit'
+                                });
+                            } else {
+                                purchaseDate = formatValue(row.PURCHASE);
+                            }
+                        } catch (e) {
+                            purchaseDate = formatValue(row.PURCHASE);
+                        }
+                    }
+
+                    return `
+                        <tr>
+                            <td>${formatValue(row.HSHD_NUM, 'number')}</td>
+                            <td>${formatValue(row.BASKET_NUM)}</td>
+                            <td>${purchaseDate}</td>
+                            <td>${formatValue(row.PRODUCT_NUM, 'number')}</td>
+                            <td>${formatValue(row.DEPARTMENT)}</td>
+                            <td>${formatValue(row.COMMODITY)}</td>
+                            <td>${formatValue(row.SPEND, 'money')}</td>
+                            <td>${formatValue(row.UNITS, 'number')}</td>
+                            <td>${formatValue(row.STORE_REGION)}</td>
+                            <td>${formatValue(row.WEEK_NUM, 'number')}</td>
+                            <td>${formatValue(row.YEAR, 'number')}</td>
+                            <td>${formatValue(row.LOYALTY_FLAG)}</td>
+                            <td>${formatValue(row.AGE_RANGE)}</td>
+                            <td>${formatValue(row.MARITAL_STATUS)}</td>
+                            <td>${formatValue(row.INCOME_RANGE)}</td>
+                            <td>${formatValue(row.HOMEOWNER_DESC)}</td>
+                            <td>${formatValue(row.HSHD_COMPOSITION)}</td>
+                            <td>${formatValue(row.HSHD_SIZE)}</td>
+                            <td>${formatValue(row.CHILDREN)}</td>
+                        </tr>
+                    `;
+                }).join('');
+                fragments.push(rows);
+            }
+
+            results.innerHTML = tableHeader + fragments.join('') + '</tbody></table>';
+            updateSortIcons();
+
+            // Add virtual scrolling for large datasets
+            if (data.length > 1000) {
+                const tableContainer = results.querySelector('.table-scroll-container');
+                if (tableContainer) {
+                    tableContainer.addEventListener('scroll', handleVirtualScroll);
+                }
+            }
+        }
+
+        function updateSortIcons() {
+            const headers = document.querySelectorAll('th');
+            headers.forEach(header => {
+                // Remove all sort classes first
+                header.classList.remove('sort-asc', 'sort-desc');
+                header.classList.add('sort-icon');
+                
+                // Get the column name from the onclick attribute
+                const onclickAttr = header.getAttribute('onclick');
+                const columnMatch = onclickAttr.match(/sortData\('(.+?)'\)/);
+                if (columnMatch) {
+                    const column = columnMatch[1];
+                    if (column === currentSort.column) {
+                        header.classList.remove('sort-icon');
+                        header.classList.add(`sort-${currentSort.direction}`);
+                    }
+                }
+            });
+        }
+
+        function exportToCSV() {
+            if (!currentData.length) return;
+
+            const headers = Object.keys(currentData[0]);
+            let csv = headers.join(',') + '\n';
+
+            currentData.forEach(row => {
+                csv += headers.map(header => {
+                    let value = row[header];
+                    if (value === null || value === undefined) value = '';
+                    value = value.toString().replace(/"/g, '""');
+                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                        value = `"${value}"`;
+                    }
+                    return value;
+                }).join(',');
+                csv += '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'household_data.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Add event listener for Enter key
@@ -261,40 +382,6 @@
                 searchData();
             }
         });
-
-        // Export to CSV functionality
-        function exportToCSV() {
-            const table = document.querySelector('table');
-            if (!table) return;
-
-            const rows = table.querySelectorAll('tr');
-            let csv = [];
-            
-            for (let row of rows) {
-                const cols = row.querySelectorAll('td, th');
-                const rowData = Array.from(cols).map(col => {
-                    // Handle special characters and commas in the data
-                    let text = col.textContent;
-                    // Remove dollar signs and commas from numbers
-                    text = text.replace('$', '').replace(',', '');
-                    // Wrap in quotes if contains comma
-                    if (text.includes(',')) {
-                        text = `"${text}"`;
-                    }
-                    return text;
-                });
-                csv.push(rowData.join(','));
-            }
-            
-            const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `household_${document.getElementById('hshdNum').value}_data.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
     </script>
 </body>
 </html>

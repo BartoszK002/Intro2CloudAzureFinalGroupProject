@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Analytics Dashboard</title>
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Retail Analytics Dashboard</h1>
+    </div>
+
+    <div class="container">
+        <div class="nav-links">
+            <a href="data.html" style="color: #4CAF50; text-decoration: none; padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 4px; transition: all 0.3s ease; margin-right: 10px;">Household Search</a>
+            <a href="upload.html" style="color: #4CAF50; text-decoration: none; padding: 10px 20px; border: 2px solid #4CAF50; border-radius: 4px; transition: all 0.3s ease;">Data Upload</a>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Key Statistics Section -->
+            <div class="stats-container">
+                <h2>Key Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Households</h3>
+                        <div id="totalHouseholds" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Transactions</h3>
+                        <div id="totalTransactions" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Spend</h3>
+                        <div id="averageSpend" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Loyalty Rate</h3>
+                        <div id="loyaltyRate" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Transactions per Household</h3>
+                        <div id="transactionsPerHousehold" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div id="totalRevenue" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Most Active Department</h3>
+                        <div id="topDepartment" class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Peak Shopping Month</h3>
+                        <div id="peakMonth" class="stat-value">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demographics Section -->
+            <div class="chart-container">
+                <h2>Household Demographics</h2>
+                <div class="chart-grid">
+                    <div class="chart-card">
+                        <h3>Household Size Distribution</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="householdSizeChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="householdSizeStats"></div>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Income Range Distribution</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="incomeRangeChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="incomeRangeStats"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spending Analysis Section -->
+            <div class="chart-container">
+                <h2>Spending Analysis</h2>
+                <div class="chart-grid">
+                    <div class="chart-card wide">
+                        <h3>Average Spend by Department</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="departmentSpendChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="departmentSpendStats"></div>
+                        </div>
+                    </div>
+                    <div class="chart-card wide">
+                        <h3>Monthly Spending Trends</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="monthlySpendChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="monthlySpendStats"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Segments Section -->
+            <div class="chart-container">
+                <h2>Customer Segments</h2>
+                <div class="chart-grid">
+                    <div class="chart-card">
+                        <h3>Age Range Distribution</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="ageRangeChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="ageRangeStats"></div>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Marital Status Distribution</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="maritalStatusChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="maritalStatusStats"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regional Analysis Section -->
+            <div class="chart-container">
+                <h2>Regional Analysis</h2>
+                <div class="chart-grid">
+                    <div class="chart-card wide">
+                        <h3>Spending by Region</h3>
+                        <div class="chart-with-stats">
+                            <div class="chart-wrapper">
+                                <canvas id="regionSpendChart"></canvas>
+                            </div>
+                            <div class="stats-list" id="regionSpendStats"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Common chart options
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10,
+                        font: {
+                            size: 11
+                        },
+                        filter: (legendItem) => {
+                            return legendItem.text !== 'null' && 
+                                   legendItem.text !== 'undefined' && 
+                                   legendItem.text.trim() !== '';
+                        }
+                    }
+                }
+            },
+            layout: {
+                padding: {
+                    left: 15,
+                    right: 15,
+                    top: 15,
+                    bottom: 50
+                }
+            }
+        };
+
+        // Enhanced data filtering function
+        function filterInvalidData(data) {
+            console.log('Original data:', data); // Debug log
+
+            const filteredData = {
+                labels: [],
+                values: []
+            };
+
+            if (!data || !data.labels || !data.values) {
+                console.warn('Invalid data structure received:', data);
+                return filteredData;
+            }
+
+            for (let i = 0; i < data.labels.length; i++) {
+                let label = data.labels[i];
+                let value = data.values[i];
+
+                // Convert label to string if it exists
+                if (label !== undefined && label !== null) {
+                    label = label.toString().trim();
+                }
+
+                // Comprehensive label validation
+                const isValidLabel = label && 
+                    label.toLowerCase() !== 'null' && 
+                    label.toLowerCase() !== 'undefined' && 
+                    label !== '';
+
+                // Convert value to number and validate
+                value = parseFloat(value);
+                const isValidValue = !isNaN(value) && value !== null;
+
+                if (isValidLabel && isValidValue) {
+                    filteredData.labels.push(label);
+                    filteredData.values.push(value);
+                }
+            }
+
+            console.log('Filtered data:', filteredData); // Debug log
+            return filteredData;
+        }
+
+        // Debug function to log data at each step
+        function logDataState(context, data) {
+            console.log(`${context}:`, {
+                labels: data.labels,
+                values: data.values,
+                labelTypes: data.labels.map(l => typeof l),
+                valueTypes: data.values.map(v => typeof v)
+            });
+        }
+
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+                const data = await response.json();
+                console.log('Raw API response:', data); // Debug log
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update key statistics with data validation
+            const stats = {
+                totalHouseholds: parseInt(data.totalHouseholds) || 0,
+                totalTransactions: parseInt(data.totalTransactions) || 0,
+                averageSpend: parseFloat(data.averageSpend) || 0,
+                loyaltyRate: parseFloat(data.loyaltyRate) || 0,
+                // Calculate transactions per household
+                transactionsPerHousehold: data.totalHouseholds ? 
+                    (data.totalTransactions / data.totalHouseholds).toFixed(1) : 0,
+                // Calculate total revenue
+                totalRevenue: (data.totalTransactions * data.averageSpend) || 0,
+                // Get top department by spend
+                topDepartment: data.departmentSpend && data.departmentSpend.labels && data.departmentSpend.values ? 
+                    data.departmentSpend.labels[
+                        data.departmentSpend.values.indexOf(Math.max(...data.departmentSpend.values))
+                    ] || 'N/A' : 'N/A',
+                // Get peak shopping month
+                peakMonth: data.monthlySpend && data.monthlySpend.labels && data.monthlySpend.values ? 
+                    data.monthlySpend.labels[
+                        data.monthlySpend.values.indexOf(Math.max(...data.monthlySpend.values))
+                    ] || 'N/A' : 'N/A'
+            };
+
+            // Update display for existing metrics
+            document.getElementById('totalHouseholds').textContent = stats.totalHouseholds.toLocaleString();
+            document.getElementById('totalTransactions').textContent = stats.totalTransactions.toLocaleString();
+            document.getElementById('averageSpend').textContent = `$${stats.averageSpend.toFixed(2)}`;
+            document.getElementById('loyaltyRate').textContent = `${(stats.loyaltyRate * 100).toFixed(1)}%`;
+
+            // Update display for new metrics
+            document.getElementById('transactionsPerHousehold').textContent = stats.transactionsPerHousehold;
+            document.getElementById('totalRevenue').textContent = `$${stats.totalRevenue.toLocaleString()}`;
+            document.getElementById('topDepartment').textContent = stats.topDepartment;
+            document.getElementById('peakMonth').textContent = stats.peakMonth;
+
+            // Create charts with filtered data
+            Object.entries({
+                householdSizes: createHouseholdSizeChart,
+                incomeRanges: createIncomeRangeChart,
+                departmentSpend: createDepartmentSpendChart,
+                monthlySpend: createMonthlySpendChart,
+                ageRanges: createAgeRangeChart,
+                maritalStatus: createMaritalStatusChart,
+                regionSpend: createRegionSpendChart
+            }).forEach(([key, createFn]) => {
+                if (data[key]) {
+                    logDataState(`Pre-filter ${key}`, data[key]);
+                    createFn(data[key]);
+                } else {
+                    console.warn(`Missing data for ${key}`);
+                }
+            });
+        }
+
+        function updateStatsList(elementId, data, label, isCurrency = false) {
+            const statsElement = document.getElementById(elementId);
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                statsElement.innerHTML = '<div class="stats-header">No valid data available</div>';
+                return;
+            }
+
+            const total = filteredData.values.reduce((a, b) => a + b, 0);
+            
+            const formattedStats = filteredData.labels.map((label, i) => {
+                const value = filteredData.values[i];
+                const percentage = ((value / total) * 100).toFixed(1);
+                const formattedValue = isCurrency 
+                    ? `$${value.toFixed(2)}`
+                    : value.toLocaleString();
+
+                let formattedLabel = formatLabel(label, elementId);
+
+                return `
+                    <div class="stat-item">
+                        <span class="stat-label">${formattedLabel}</span>
+                        <div class="stat-details">
+                            <span class="stat-value">${formattedValue}</span>
+                            <span class="stat-percentage">(${percentage}%)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            statsElement.innerHTML = `
+                <div class="stats-header">${label} Distribution</div>
+                ${formattedStats}
+                <div class="stats-footer">Total: ${isCurrency ? '$' : ''}${total.toLocaleString()}</div>
+            `;
+        }
+
+        function formatLabel(label, context) {
+            switch(context) {
+                case 'householdSizeStats':
+                    return `${label} Person${label === '1' ? '' : 's'} Household`;
+                case 'incomeRangeStats':
+                    return `Income: ${label}`;
+                case 'departmentSpendStats':
+                    return `Department: ${label}`;
+                case 'ageRangeStats':
+                    return `Age ${label}`;
+                case 'regionSpendStats':
+                    return `Region: ${label}`;
+                default:
+                    return label;
+            }
+        }
+
+        function createHouseholdSizeChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for household size chart');
+                return;
+            }
+
+            // Sort by household size numerically
+            const sortedIndices = filteredData.labels
+                .map((label, index) => ({ label, index }))
+                .sort((a, b) => parseInt(a.label) - parseInt(b.label))
+                .map(item => item.index);
+
+            const sortedData = {
+                labels: sortedIndices.map(i => `${filteredData.labels[i]} Person${filteredData.labels[i] === '1' ? '' : 's'}`),
+                values: sortedIndices.map(i => filteredData.values[i])
+            };
+
+            new Chart(document.getElementById('householdSizeChart'), {
+                type: 'pie',
+                data: {
+                    labels: sortedData.labels,
+                    datasets: [{
+                        data: sortedData.values,
+                        backgroundColor: [
+                            '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107',
+                            '#FF9800', '#FF5722'
+                        ]
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Distribution by Household Size',
+                            padding: {
+                                bottom: 15
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update stats
+            updateStatsList('householdSizeStats', sortedData, 'Households');
+        }
+
+        function createIncomeRangeChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for income range chart');
+                return;
+            }
+
+            // Sort income ranges in ascending order
+            const incomeOrder = {
+                'Under 35K': 1,
+                '35-49K': 2,
+                '50-74K': 3,
+                '75-99K': 4,
+                '100-150K': 5,
+                '150K+': 6
+            };
+
+            const sortedIndices = filteredData.labels
+                .map((label, index) => ({ label, index }))
+                .sort((a, b) => (incomeOrder[a.label] || 999) - (incomeOrder[b.label] || 999))
+                .map(item => item.index);
+
+            const sortedData = {
+                labels: sortedIndices.map(i => filteredData.labels[i]),
+                values: sortedIndices.map(i => filteredData.values[i])
+            };
+
+            new Chart(document.getElementById('incomeRangeChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedData.labels,
+                    datasets: [{
+                        label: 'Number of Households',
+                        data: sortedData.values,
+                        backgroundColor: '#4CAF50'
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Households',
+                                padding: {
+                                    bottom: 10
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Income Range',
+                                padding: {
+                                    top: 20
+                                }
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                padding: 10
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update stats with correct label
+            updateStatsList('incomeRangeStats', sortedData, 'Income Range');
+        }
+
+        function createDepartmentSpendChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for department spend chart');
+                return;
+            }
+
+            // Sort departments by spend
+            const sortedIndices = filteredData.values
+                .map((value, index) => ({ value, index }))
+                .sort((a, b) => b.value - a.value)
+                .map(item => item.index);
+
+            const sortedData = {
+                labels: sortedIndices.map(i => filteredData.labels[i]),
+                values: sortedIndices.map(i => filteredData.values[i])
+            };
+
+            new Chart(document.getElementById('departmentSpendChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedData.labels,
+                    datasets: [{
+                        label: 'Average Spend ($)',
+                        data: sortedData.values,
+                        backgroundColor: '#4CAF50'
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Spend ($)',
+                                padding: {
+                                    bottom: 10
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Department',
+                                padding: {
+                                    top: 20
+                                }
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                padding: 10
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update stats
+            updateStatsList('departmentSpendStats', sortedData, 'Avg. Spend', true);
+        }
+
+        function createMonthlySpendChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for monthly spend chart');
+                return;
+            }
+
+            new Chart(document.getElementById('monthlySpendChart'), {
+                type: 'line',
+                data: {
+                    labels: filteredData.labels,
+                    datasets: [{
+                        label: 'Average Monthly Spend ($)',
+                        data: filteredData.values,
+                        borderColor: '#4CAF50',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Spend ($)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update stats
+            updateStatsList('monthlySpendStats', filteredData, 'Monthly Spend', true);
+        }
+
+        function createAgeRangeChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for age range chart');
+                return;
+            }
+
+            new Chart(document.getElementById('ageRangeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: filteredData.labels,
+                    datasets: [{
+                        data: filteredData.values,
+                        backgroundColor: [
+                            '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107'
+                        ]
+                    }]
+                },
+                options: commonChartOptions
+            });
+
+            // Update stats
+            updateStatsList('ageRangeStats', filteredData, 'Age Range');
+        }
+
+        function createMaritalStatusChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for marital status chart');
+                return;
+            }
+
+            new Chart(document.getElementById('maritalStatusChart'), {
+                type: 'pie',
+                data: {
+                    labels: filteredData.labels,
+                    datasets: [{
+                        data: filteredData.values,
+                        backgroundColor: [
+                            '#4CAF50', '#8BC34A', '#CDDC39'
+                        ]
+                    }]
+                },
+                options: commonChartOptions
+            });
+
+            // Update stats
+            updateStatsList('maritalStatusStats', filteredData, 'Marital Status');
+        }
+
+        function createRegionSpendChart(data) {
+            const filteredData = filterInvalidData(data);
+            
+            if (filteredData.values.length === 0) {
+                console.warn('No valid data for region spend chart');
+                return;
+            }
+
+            new Chart(document.getElementById('regionSpendChart'), {
+                type: 'bar',
+                data: {
+                    labels: filteredData.labels,
+                    datasets: [{
+                        label: 'Average Spend per Transaction ($)',
+                        data: filteredData.values,
+                        backgroundColor: '#4CAF50'
+                    }]
+                },
+                options: {
+                    ...commonChartOptions,
+                    plugins: {
+                        ...commonChartOptions.plugins,
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Spend ($)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Region'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update stats
+            updateStatsList('regionSpendStats', filteredData, 'Region Spend', true);
+        }
+
+        // Load dashboard data when page loads
+        document.addEventListener('DOMContentLoaded', fetchDashboardData);
+    </script>
+</body>
+</html> 

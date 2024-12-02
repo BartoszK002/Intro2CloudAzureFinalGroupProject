@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Upload - Retail Data Analysis</title>
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/upload.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Data Upload</h1>
+    </div>
+
+    <div class="container">
+        <div class="nav-links">
+            <a href="data.html">← Back to Data Search</a>
+        </div>
+
+        <div class="data-upload-section">
+            <h2>Upload Data Files</h2>
+            <div class="file-upload">
+                <label>Households Data:</label>
+                <input type="file" id="householdsFile" accept=".csv">
+            </div>
+            <div class="file-upload">
+                <label>Transactions Data:</label>
+                <input type="file" id="transactionsFile" accept=".csv">
+            </div>
+            <div class="file-upload">
+                <label>Products Data:</label>
+                <input type="file" id="productsFile" accept=".csv">
+            </div>
+            <button onclick="uploadData()">Upload Data</button>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        async function uploadData() {
+            const householdsFile = document.getElementById('householdsFile').files[0];
+            const transactionsFile = document.getElementById('transactionsFile').files[0];
+            const productsFile = document.getElementById('productsFile').files[0];
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (!householdsFile || !transactionsFile || !productsFile) {
+                errorMessage.textContent = 'Please select all required files';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('households', householdsFile);
+            formData.append('transactions', transactionsFile);
+            formData.append('products', productsFile);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                alert('Data uploaded successfully!');
+                
+                // Clear the file inputs
+                document.getElementById('householdsFile').value = '';
+                document.getElementById('transactionsFile').value = '';
+                document.getElementById('productsFile').value = '';
+                errorMessage.style.display = 'none';
+            } catch (error) {
+                errorMessage.textContent = `Error uploading data: ${error.message}`;
+                errorMessage.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html> 

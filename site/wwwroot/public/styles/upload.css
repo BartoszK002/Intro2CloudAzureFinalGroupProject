@@ -1,0 +1,42 @@
+/* Styles specific to upload.html */
+.container {
+    max-width: 800px;
+}
+
+.data-upload-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.file-upload {
+    margin: 20px 0;
+}
+
+.file-upload label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.file-upload input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    transition: border-color 0.3s;
+}
+
+.file-upload input[type="file"]:hover {
+    border-color: #4CAF50;
+}
+
+/* Upload page specific button styles */
+.data-upload-section button {
+    width: 100%;
+    margin-top: 20px;
+} 
