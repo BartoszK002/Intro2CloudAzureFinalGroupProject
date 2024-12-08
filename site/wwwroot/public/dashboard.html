@@ -239,15 +239,27 @@
 
         async function fetchDashboardData() {
             try {
+                // Try to ensure database is ready first
+                await fetch('/api/health');
+                
                 const response = await fetch('/api/dashboard');
                 if (!response.ok) {
-                    throw new Error('Failed to fetch dashboard data');
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log('Raw API response:', data); // Debug log
-                updateDashboard(data);
+                
+                console.log('Dashboard data received:', data); // Debug log
+                
+                if (data && typeof data === 'object') {
+                    console.log('Updating dashboard with data');
+                    updateDashboard(data);
+                } else {
+                    console.error('Invalid dashboard data received:', data);
+                    showError('Failed to load dashboard data. Please try refreshing the page.');
+                }
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
+                showError('Failed to load dashboard data. Please try refreshing the page.');
             }
         }
 
@@ -710,6 +722,21 @@
 
             // Update stats
             updateStatsList('regionSpendStats', filteredData, 'Region Spend', true);
+        }
+
+        function showError(message) {
+            // Add this HTML to your dashboard.html if not already present
+            const errorDiv = document.getElementById('errorMessage') || 
+                            document.createElement('div');
+            errorDiv.id = 'errorMessage';
+            errorDiv.style.color = 'red';
+            errorDiv.style.padding = '20px';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.textContent = message;
+            
+            // Insert at the top of the dashboard
+            const container = document.querySelector('.container');
+            container.insertBefore(errorDiv, container.firstChild);
         }
 
         // Load dashboard data when page loads

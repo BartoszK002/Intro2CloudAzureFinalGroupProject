@@ -21,10 +21,16 @@ const config = {
 
 // Create a connection pool
 const pool = new sql.ConnectionPool(config);
-const poolConnect = pool.connect().catch(err => {
-    console.error('Failed to connect to database:', err);
-    process.exit(1);
-});
+let poolReady = false;
+let poolPromise = pool.connect()
+    .then(() => {
+        console.log('Database pool connected successfully');
+        poolReady = true;
+    })
+    .catch(err => {
+        console.error('Failed to connect to database:', err);
+        throw err;
+    });
 
 // Enhanced error logging function
 function logError(context, error) {
@@ -61,15 +67,50 @@ pool.on('error', err => {
     logError('SQL Pool Error', err);
 });
 
+// Add these schema definitions at the top of api.js
+const TABLE_SCHEMAS = {
+    Households: {
+        HSHD_NUM: sql.Int,
+        L: sql.Char(1),
+        AGE_RANGE: sql.VarChar(100),
+        MARITAL: sql.VarChar(100),
+        INCOME_RANGE: sql.VarChar(100),
+        HOMEOWNER: sql.VarChar(100),
+        HSHD_COMPOSITION: sql.VarChar(100),
+        HH_SIZE: sql.VarChar(100),
+        CHILDREN: sql.VarChar(100)
+    },
+    Transactions: {
+        HSHD_NUM: sql.Int,
+        BASKET_NUM: sql.VarChar(100),
+        PURCHASE: sql.Date,
+        PRODUCT_NUM: sql.Int,
+        SPEND: sql.Decimal(10, 2),
+        UNITS: sql.Int,
+        STORE_R: sql.VarChar(100),
+        WEEK_NUM: sql.Int,
+        YEAR: sql.Int
+    },
+    Products: {
+        PRODUCT_NUM: sql.Int,
+        DEPARTMENT: sql.VarChar(100),
+        COMMODITY: sql.VarChar(100),
+        BRAND_TY: sql.VarChar(100),
+        NATURAL_ORGANIC_FLAG: sql.Char(1)
+    }
+};
+
 async function searchHousehold(hshdNum) {
     const context = `searchHousehold(${hshdNum})`;
     try {
+        // Wait for pool to be ready
+        if (!poolReady) {
+            logDebug(context, 'Waiting for database pool to connect...');
+            await poolPromise;
+        }
+        
         logDebug(context, 'Starting household search', { hshdNum });
         
-        // Ensure pool is connected
-        await poolConnect;
-        logDebug(context, 'Database pool connected successfully');
-
         // First check if household exists
         const checkQuery = `
             SELECT HSHD_NUM 
@@ -145,7 +186,12 @@ async function processHouseholds(data) {
     const context = 'processHouseholds';
     try {
         logDebug(context, 'Processing households data', { rowCount: data.length });
-        await poolConnect;
+        
+        // Wait for pool to be ready
+        if (!poolReady) {
+            logDebug(context, 'Waiting for database pool to connect...');
+            await poolPromise;
+        }
 
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
@@ -154,27 +200,33 @@ async function processHouseholds(data) {
             // Clear existing data
             await transaction.request().query('DELETE FROM Households');
 
-            // Insert new data
-            for (const row of data) {
-                await transaction.request()
-                    .input('HSHD_NUM', sql.Int, parseInt(row.HSHD_NUM))
-                    .input('L', sql.Char(1), row.L)
-                    .input('AGE_RANGE', sql.VarChar(100), row.AGE_RANGE)
-                    .input('MARITAL', sql.VarChar(100), row.MARITAL)
-                    .input('INCOME_RANGE', sql.VarChar(100), row.INCOME_RANGE)
-                    .input('HOMEOWNER', sql.VarChar(100), row.HOMEOWNER)
-                    .input('HSHD_COMPOSITION', sql.VarChar(100), row.HSHD_COMPOSITION)
-                    .input('HH_SIZE', sql.VarChar(100), row.HH_SIZE)
-                    .input('CHILDREN', sql.VarChar(100), row.CHILDREN)
-                    .query(`
-                        INSERT INTO Households 
-                        (HSHD_NUM, L, AGE_RANGE, MARITAL, INCOME_RANGE, HOMEOWNER, HSHD_COMPOSITION, HH_SIZE, CHILDREN)
-                        VALUES 
-                        (@HSHD_NUM, @L, @AGE_RANGE, @MARITAL, @INCOME_RANGE, @HOMEOWNER, @HSHD_COMPOSITION, @HH_SIZE, @CHILDREN)
-                    `);
-            }
+            // Prepare bulk insert
+            const table = new sql.Table('Households');
+            
+            // Add columns according to schema
+            Object.entries(TABLE_SCHEMAS.Households).forEach(([column, type]) => {
+                table.columns.add(column, type, { nullable: true });
+            });
 
+            // Add rows with proper data type conversion
+            data.forEach(row => {
+                table.rows.add(
+                    parseInt(row.HSHD_NUM) || null,
+                    row.L || null,
+                    row.AGE_RANGE || null,
+                    row.MARITAL || null,
+                    row.INCOME_RANGE || null,
+                    row.HOMEOWNER || null,
+                    row.HSHD_COMPOSITION || null,
+                    row.HH_SIZE || null,
+                    row.CHILDREN || null
+                );
+            });
+
+            // Perform bulk insert
+            await transaction.request().bulk(table);
             await transaction.commit();
+            
             logDebug(context, 'Successfully processed households data');
         } catch (err) {
             await transaction.rollback();
@@ -190,36 +242,41 @@ async function processTransactions(data) {
     const context = 'processTransactions';
     try {
         logDebug(context, 'Processing transactions data', { rowCount: data.length });
-        await poolConnect;
+        
+        if (!poolReady) {
+            logDebug(context, 'Waiting for database pool to connect...');
+            await poolPromise;
+        }
 
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
 
         try {
-            // Clear existing data
             await transaction.request().query('DELETE FROM Transactions');
 
-            // Insert new data
-            for (const row of data) {
-                await transaction.request()
-                    .input('HSHD_NUM', sql.Int, parseInt(row.HSHD_NUM))
-                    .input('BASKET_NUM', sql.VarChar(100), row.BASKET_NUM)
-                    .input('PURCHASE', sql.Date, new Date(row.PURCHASE))
-                    .input('PRODUCT_NUM', sql.Int, parseInt(row.PRODUCT_NUM))
-                    .input('SPEND', sql.Decimal(10, 2), parseFloat(row.SPEND))
-                    .input('UNITS', sql.Int, parseInt(row.UNITS))
-                    .input('STORE_R', sql.VarChar(100), row.STORE_R)
-                    .input('WEEK_NUM', sql.Int, parseInt(row.WEEK_NUM))
-                    .input('YEAR', sql.Int, parseInt(row.YEAR))
-                    .query(`
-                        INSERT INTO Transactions 
-                        (HSHD_NUM, BASKET_NUM, PURCHASE, PRODUCT_NUM, SPEND, UNITS, STORE_R, WEEK_NUM, YEAR)
-                        VALUES 
-                        (@HSHD_NUM, @BASKET_NUM, @PURCHASE, @PRODUCT_NUM, @SPEND, @UNITS, @STORE_R, @WEEK_NUM, @YEAR)
-                    `);
-            }
+            const table = new sql.Table('Transactions');
+            
+            Object.entries(TABLE_SCHEMAS.Transactions).forEach(([column, type]) => {
+                table.columns.add(column, type, { nullable: true });
+            });
 
+            data.forEach(row => {
+                table.rows.add(
+                    parseInt(row.HSHD_NUM) || null,
+                    row.BASKET_NUM || null,
+                    row.PURCHASE ? new Date(row.PURCHASE) : null,
+                    parseInt(row.PRODUCT_NUM) || null,
+                    parseFloat(row.SPEND) || null,
+                    parseInt(row.UNITS) || null,
+                    row.STORE_R || null,
+                    parseInt(row.WEEK_NUM) || null,
+                    parseInt(row.YEAR) || null
+                );
+            });
+
+            await transaction.request().bulk(table);
             await transaction.commit();
+            
             logDebug(context, 'Successfully processed transactions data');
         } catch (err) {
             await transaction.rollback();
@@ -235,32 +292,37 @@ async function processProducts(data) {
     const context = 'processProducts';
     try {
         logDebug(context, 'Processing products data', { rowCount: data.length });
-        await poolConnect;
+        
+        if (!poolReady) {
+            logDebug(context, 'Waiting for database pool to connect...');
+            await poolPromise;
+        }
 
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
 
         try {
-            // Clear existing data
             await transaction.request().query('DELETE FROM Products');
 
-            // Insert new data
-            for (const row of data) {
-                await transaction.request()
-                    .input('PRODUCT_NUM', sql.Int, parseInt(row.PRODUCT_NUM))
-                    .input('DEPARTMENT', sql.VarChar(100), row.DEPARTMENT)
-                    .input('COMMODITY', sql.VarChar(100), row.COMMODITY)
-                    .input('BRAND_TY', sql.VarChar(100), row.BRAND_TY)
-                    .input('NATURAL_ORGANIC_FLAG', sql.Char(1), row.NATURAL_ORGANIC_FLAG)
-                    .query(`
-                        INSERT INTO Products 
-                        (PRODUCT_NUM, DEPARTMENT, COMMODITY, BRAND_TY, NATURAL_ORGANIC_FLAG)
-                        VALUES 
-                        (@PRODUCT_NUM, @DEPARTMENT, @COMMODITY, @BRAND_TY, @NATURAL_ORGANIC_FLAG)
-                    `);
-            }
+            const table = new sql.Table('Products');
+            
+            Object.entries(TABLE_SCHEMAS.Products).forEach(([column, type]) => {
+                table.columns.add(column, type, { nullable: true });
+            });
 
+            data.forEach(row => {
+                table.rows.add(
+                    parseInt(row.PRODUCT_NUM) || null,
+                    row.DEPARTMENT || null,
+                    row.COMMODITY || null,
+                    row.BRAND_TY || null,
+                    row.NATURAL_ORGANIC_FLAG || null
+                );
+            });
+
+            await transaction.request().bulk(table);
             await transaction.commit();
+            
             logDebug(context, 'Successfully processed products data');
         } catch (err) {
             await transaction.rollback();
@@ -275,7 +337,13 @@ async function processProducts(data) {
 async function getDashboardData() {
     const context = 'getDashboardData';
     try {
-        await poolConnect;
+        // Wait for pool to be ready
+        if (!poolReady) {
+            logDebug(context, 'Waiting for database pool to connect...');
+            await poolPromise;
+        }
+        
+        logDebug(context, 'Starting dashboard data fetch');
         
         // Get key statistics
         const statsQuery = `
@@ -288,6 +356,7 @@ async function getDashboardData() {
             LEFT JOIN Transactions t ON h.HSHD_NUM = t.HSHD_NUM`;
         
         const stats = await pool.request().query(statsQuery);
+        logDebug(context, 'Stats query completed');
 
         // Get household size distribution
         const householdSizeQuery = `
@@ -302,6 +371,7 @@ async function getDashboardData() {
                 END`;
         
         const householdSizes = await pool.request().query(householdSizeQuery);
+        logDebug(context, 'Household sizes query completed');
 
         // Get income range distribution
         const incomeQuery = `
@@ -392,7 +462,7 @@ async function getDashboardData() {
         
         const regionSpend = await pool.request().query(regionQuery);
 
-        // Format the response
+        // Format and return the response
         const response = {
             totalHouseholds: stats.recordset[0].totalHouseholds,
             totalTransactions: stats.recordset[0].totalTransactions,
@@ -428,10 +498,11 @@ async function getDashboardData() {
             }
         };
 
+        logDebug(context, 'Dashboard data fetch completed successfully');
         return response;
     } catch (err) {
         logError(context, err);
-        throw err;
+        throw new Error(`Failed to fetch dashboard data: ${err.message}`);
     }
 }
 
@@ -458,11 +529,18 @@ process.on('SIGTERM', async () => {
     }
 });
 
+// Add these functions to expose pool status
+function isPoolReady() {
+    return poolReady;
+}
+
 module.exports = { 
     searchHousehold,
     closePool,
     processHouseholds,
     processTransactions,
     processProducts,
-    getDashboardData
+    getDashboardData,
+    isPoolReady,
+    pool  // Expose the pool for health checks
 };

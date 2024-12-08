@@ -171,17 +171,44 @@ app.post('/api/upload', upload.fields([
     }
 });
 
-// Add dashboard endpoint
+// Modify the dashboard endpoint
 app.get('/api/dashboard', async (req, res) => {
+    const context = 'GET /api/dashboard';
     try {
+        // Check if database is ready
+        if (!api.isPoolReady()) {
+            logDebug(context, 'Waiting for database connection...');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
+            if (!api.isPoolReady()) {
+                throw new Error('Database connection not ready');
+            }
+        }
+
         const data = await api.getDashboardData();
+        logDebug(context, 'Dashboard data fetched successfully');
         res.json(data);
     } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        logError(context, error);
         res.status(500).json({ 
             success: false, 
-            message: 'Failed to fetch dashboard data' 
+            message: 'Failed to fetch dashboard data',
+            error: error.message
         });
+    }
+});
+
+// Add health check endpoint
+app.get('/api/health', async (req, res) => {
+    try {
+        // Use the existing pool from api.js
+        if (!api.isPoolReady()) {
+            throw new Error('Database pool not ready');
+        }
+        await api.pool.request().query('SELECT 1');
+        res.json({ status: 'ok' });
+    } catch (error) {
+        console.error('Health check failed:', error);
+        res.status(503).json({ status: 'error', message: 'Database not ready' });
     }
 });
 

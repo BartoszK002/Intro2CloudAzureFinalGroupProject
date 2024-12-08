@@ -61,9 +61,31 @@
         const searchCache = new Map();
         const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
-        // Auto-load household #10 on page load
-        window.onload = function() {
+        // Add this function near the top of your script section
+        async function checkDatabaseConnection() {
+            try {
+                const response = await fetch('/api/health');
+                if (!response.ok) {
+                    console.warn('Database health check returned:', response.status);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.warn('Database health check failed:', error);
+                return false;
+            }
+        }
+
+        // Modify the window.onload function
+        window.onload = async function() {
             document.getElementById('hshdNum').value = '10';
+            
+            // Try the health check but don't block the page load
+            checkDatabaseConnection().catch(error => {
+                console.warn('Health check failed, but continuing anyway:', error);
+            });
+            
+            // Proceed with the search regardless of health check
             searchData();
         };
 
@@ -89,21 +111,11 @@
             }
 
             try {
-                // Check cache first
-                const cachedResult = searchCache.get(hshdNum);
-                if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_EXPIRY) {
-                    currentData = cachedResult.data;
-                    displayData(currentData);
-                    exportBtn.style.display = 'block';
-                    updateResultCount(currentData.length);
-                    loadingOverlay.style.display = 'none';
-                    return;
-                }
-
                 const response = await fetch(`/api/household/${hshdNum}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
                 const result = await response.json();
                 
                 if (!result.success) {
