@@ -19,18 +19,61 @@ const config = {
     }
 };
 
-// Create a connection pool
-const pool = new sql.ConnectionPool(config);
+let pool = null;
 let poolReady = false;
-let poolPromise = pool.connect()
-    .then(() => {
-        console.log('Database pool connected successfully');
-        poolReady = true;
-    })
-    .catch(err => {
-        console.error('Failed to connect to database:', err);
-        throw err;
-    });
+let connectionRetries = 0;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000; // 5 seconds
+const IDLE_CHECK_INTERVAL = 60000; // Check connection every minute
+let connectionCheckInterval;
+
+async function ensureConnection() {
+    const context = 'ensureConnection';
+    
+    if (poolReady && pool) {
+        try {
+            // Test the connection
+            await pool.request().query('SELECT 1');
+            return true;
+        } catch (err) {
+            logError(context, 'Connection test failed, will reconnect');
+            poolReady = false;
+        }
+    }
+
+    while (connectionRetries < MAX_RETRIES) {
+        try {
+            if (pool) {
+                try {
+                    await pool.close();
+                } catch (err) {
+                    logError(context, 'Error closing existing pool');
+                }
+            }
+
+            pool = new sql.ConnectionPool(config);
+            await pool.connect();
+            poolReady = true;
+            connectionRetries = 0;
+            logDebug(context, 'Database connection established successfully');
+            return true;
+        } catch (err) {
+            connectionRetries++;
+            logError(context, `Connection attempt ${connectionRetries} failed: ${err.message}`);
+            if (connectionRetries < MAX_RETRIES) {
+                logDebug(context, `Waiting ${RETRY_DELAY}ms before retry...`);
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            }
+        }
+    }
+
+    throw new Error(`Failed to establish database connection after ${MAX_RETRIES} attempts`);
+}
+
+// Replace the existing pool initialization with this
+ensureConnection().catch(err => {
+    logError('Initial Connection', err);
+});
 
 // Enhanced error logging function
 function logError(context, error) {
@@ -103,11 +146,7 @@ const TABLE_SCHEMAS = {
 async function searchHousehold(hshdNum) {
     const context = `searchHousehold(${hshdNum})`;
     try {
-        // Wait for pool to be ready
-        if (!poolReady) {
-            logDebug(context, 'Waiting for database pool to connect...');
-            await poolPromise;
-        }
+        await ensureConnection();
         
         logDebug(context, 'Starting household search', { hshdNum });
         
@@ -178,7 +217,7 @@ async function searchHousehold(hshdNum) {
         return result.recordset;
     } catch (err) {
         logError(context, err);
-        throw new Error(`Failed to fetch household data: ${err.message}`);
+        throw err;
     }
 }
 
@@ -187,11 +226,7 @@ async function processHouseholds(data) {
     try {
         logDebug(context, 'Processing households data', { rowCount: data.length });
         
-        // Wait for pool to be ready
-        if (!poolReady) {
-            logDebug(context, 'Waiting for database pool to connect...');
-            await poolPromise;
-        }
+        await ensureConnection();
 
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
@@ -243,10 +278,7 @@ async function processTransactions(data) {
     try {
         logDebug(context, 'Processing transactions data', { rowCount: data.length });
         
-        if (!poolReady) {
-            logDebug(context, 'Waiting for database pool to connect...');
-            await poolPromise;
-        }
+        await ensureConnection();
 
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
@@ -293,10 +325,7 @@ async function processProducts(data) {
     try {
         logDebug(context, 'Processing products data', { rowCount: data.length });
         
-        if (!poolReady) {
-            logDebug(context, 'Waiting for database pool to connect...');
-            await poolPromise;
-        }
+        await ensureConnection();
 
         const transaction = new sql.Transaction(pool);
         await transaction.begin();
@@ -337,11 +366,7 @@ async function processProducts(data) {
 async function getDashboardData() {
     const context = 'getDashboardData';
     try {
-        // Wait for pool to be ready
-        if (!poolReady) {
-            logDebug(context, 'Waiting for database pool to connect...');
-            await poolPromise;
-        }
+        await ensureConnection();
         
         logDebug(context, 'Starting dashboard data fetch');
         
@@ -509,8 +534,14 @@ async function getDashboardData() {
 // Graceful shutdown function with enhanced logging
 async function closePool() {
     try {
+        if (connectionCheckInterval) {
+            clearInterval(connectionCheckInterval);
+        }
         logDebug('closePool', 'Attempting to close database pool');
-        await pool.close();
+        if (pool) {
+            await pool.close();
+        }
+        poolReady = false;
         logDebug('closePool', 'Pool closed successfully');
     } catch (err) {
         logError('closePool', err);
@@ -531,8 +562,29 @@ process.on('SIGTERM', async () => {
 
 // Add these functions to expose pool status
 function isPoolReady() {
-    return poolReady;
+    return poolReady && pool !== null;
 }
+
+function getPool() {
+    return pool;
+}
+
+// Add this after the ensureConnection initialization
+connectionCheckInterval = setInterval(async () => {
+    try {
+        if (poolReady && pool) {
+            await pool.request().query('SELECT 1');
+        } else {
+            await ensureConnection();
+        }
+    } catch (err) {
+        logError('Connection Check', 'Periodic connection check failed, will reconnect');
+        poolReady = false;
+        await ensureConnection().catch(err => {
+            logError('Periodic Reconnection', err);
+        });
+    }
+}, IDLE_CHECK_INTERVAL);
 
 module.exports = { 
     searchHousehold,
@@ -542,5 +594,6 @@ module.exports = {
     processProducts,
     getDashboardData,
     isPoolReady,
-    pool  // Expose the pool for health checks
+    getPool,
+    ensureConnection
 };
